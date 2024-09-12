@@ -12,7 +12,7 @@ function App() {
   const [estimatedPrice, setEstimatedPrice] = useState(0);
   const [selectedLocation, setSelectedLocation] = useState("");
 
-  const backend = import.meta.env.VITE_BACKEND_URL
+  const backend = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -29,13 +29,23 @@ function App() {
 
   const onClickedEstimatePrice = async () => {
     try {
-      const res = await axios.get(`${backend}/predict_home_price`);
-      console.log(bhk, bath, total_sqft, selectedLocation)
-      setEstimatedPrice(res.data);
-      console.log(res.data)
+      const formData = new FormData();
+      formData.append("total_sqft", total_sqft);
+      formData.append("bhk", bhk);
+      formData.append("bath", bath);
+      formData.append("location", selectedLocation);
 
+      const res = await axios.post(`${backend}/predict_home_price`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log(bhk, bath, total_sqft, selectedLocation);
+      setEstimatedPrice(res.data.estimated_price);
+      console.log(res.data);
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
     }
   };
 
@@ -176,13 +186,14 @@ function App() {
           </div>
           <button
             className="submit"
-            onClick={()=>onClickedEstimatePrice()}
+            onClick={() => onClickedEstimatePrice()}
             type="button"
           >
             Estimate Price
           </button>
           <div id="uiEstimatedPrice" className="result">
-            {" "}{estimatedPrice}
+            {" "}
+            {estimatedPrice}
             <h2 />{" "}
           </div>
         </form>
